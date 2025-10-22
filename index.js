@@ -20,7 +20,7 @@ let artifactsCollection, commentsCollection, eventsCollection;
 
 async function run() {
   try {
-    await client.connect(); // ✅ Connect to MongoDB
+    // await client.connect(); 
     console.log('✅ Connected to MongoDB');
 
     const db = client.db('artifacts_db');
