@@ -62,6 +62,50 @@ app.get(`${api}/artifacts`, async (req, res) => {
   }
 });
 
+// Update artifact
+app.put('/api/artifacts/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!ObjectId.isValid(id)) return res.status(400).json({ message: 'Invalid artifact ID' });
+
+    const updateFields = { ...req.body };
+
+    // Prevent overwriting likeCount and adder info if sent
+    delete updateFields.likeCount;
+    delete updateFields.likedBy;
+    delete updateFields.adderEmail;
+
+    const result = await artifactsCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: updateFields }
+    );
+
+    if (result.modifiedCount === 0) return res.status(404).json({ message: 'Artifact not found or no changes made' });
+
+    const updatedArtifact = await artifactsCollection.findOne({ _id: new ObjectId(id) });
+    res.json(updatedArtifact);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to update artifact', error: err.message });
+  }
+});
+
+// Delete artifact
+app.delete('/api/artifacts/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!ObjectId.isValid(id)) return res.status(400).json({ message: 'Invalid artifact ID' });
+
+    const result = await artifactsCollection.deleteOne({ _id: new ObjectId(id) });
+    if (result.deletedCount === 0) return res.status(404).json({ message: 'Artifact not found' });
+
+    res.json({ message: 'Artifact deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to delete artifact', error: err.message });
+  }
+});
+
+
+
 
 app.post(
   `${api}/artifacts`,
@@ -106,6 +150,7 @@ app.get(`${api}/artifacts/liked`, async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch liked artifacts', error: err.message });
   }
 });
+
 
 
 // PATCH like/unlike
