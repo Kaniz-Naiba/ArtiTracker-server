@@ -87,6 +87,27 @@ app.post(
   }
 );
 
+
+// ------------------- GET LIKED ARTIFACTS BY USER -------------------
+app.get(`${api}/artifacts/liked`, async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) {
+      return res.status(400).json({ message: 'Email query parameter is required' });
+    }
+
+    const likedArtifacts = await artifactsCollection
+      .find({ likedBy: email })
+      .sort({ likeCount: -1 })
+      .toArray();
+
+    res.json(likedArtifacts);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch liked artifacts', error: err.message });
+  }
+});
+
+
 // PATCH like/unlike
 app.patch(`${api}/artifacts/:id/like`, async (req, res) => {
   try {
